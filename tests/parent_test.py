@@ -121,14 +121,12 @@ class TtyCreateChildTest(unittest2.TestCase):
             pid, fd, _ = self.func([
                 'bash', '-c', 'exec 2>%s; echo hi > /dev/tty' % (tf.name,)
             ])
-            deadline = time.time() + 5.0
-            for line in mitogen.parent.iter_read([fd], deadline):
-                self.assertEquals('hi\n', line)
-                break
             waited_pid, status = os.waitpid(pid, 0)
             self.assertEquals(pid, waited_pid)
             self.assertEquals(0, status)
+            self.assertEquals('hi\n', os.read(fd, 10))
             self.assertEquals('', tf.read())
+            os.close(fd)
         finally:
             tf.close()
 
